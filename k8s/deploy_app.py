@@ -14,20 +14,19 @@ import fire
 Base_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(Base_DIR)
 from public import exec_shell
-from get_publish_info import get_publish_data
 
 
 class Deploy(object):
-    def __init__(self, data, tag):
-        self.git_tag = tag
-        self.docker_registry = data.get('docker_registry')
-        self.repository = data.get('repository')  # 代码仓库
+    def __init__(self, git_tag, docker_registry, repository,k8s_host,namespace):
+        self.git_tag = git_tag
+        self.docker_registry = docker_registry
+        self.repository = repository  # 代码仓库
         self.app_name = self.repository.split('/')[-1].replace('.git', '')
         self.deploy_name = "{}--{}".format(self.repository.split('/')[-2], self.app_name).replace("_", "-")
         self.image_name = "{}{}--{}:{}".format(self.docker_registry, self.repository.split('/')[-2], self.app_name,
                                                self.git_tag)
-        self.k8s_host = data.get('k8s_host')
-        self.namespace = data.get('namespace')
+        self.k8s_host = k8s_host
+        self.namespace = namespace
 
     def run(self):
         cmd = "kubectl set image deployment/{} {}={} -n {}".format(self.deploy_name, self.deploy_name, self.image_name,
@@ -59,15 +58,14 @@ class Deploy(object):
             exit(-2)
 
 
-def main(flow_id, git_tag):
+def main(git_tag, docker_registry, repository,k8s_host,namespace):
     """
     :param flow_id: 订单ID
     :param git_tag: Git Tag名字
     :return:
     """
     print('[INFO]: 这部分是用来在编译镜像，并且上传docker仓库')
-    data = get_publish_data(flow_id)  # 配置信息
-    obj = Deploy(data, git_tag)  # 初始化类
+    obj = Deploy(git_tag, docker_registry, repository,k8s_host,namespace)  # 初始化类
     obj.run()  # 滚动升级
     obj.check()  # 检查POD状态
 
