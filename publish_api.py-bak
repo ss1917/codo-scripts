@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2018/12/5 10:24
+# @Author  : Fred Yang
+# @File    : publish_api.py
+# @Role    : 发布接口API
+
+
+import requests
+import json
+from settings import publish_info_api, publish_token
+
+
+class Publish_API():
+    def __init__(self):
+        self.url = publish_info_api
+        self.__token = publish_token
+
+    def get_publish_name_info(self, publish_name):
+        token = self.__token
+        try:
+            params = {'key': 'publish_name', 'value': publish_name}
+            res = requests.get(self.url, params=params, cookies=dict(auth_key=token))
+            ret = json.loads(res.content)
+            if ret['code'] == 0: return ret['data']
+        except Exception as e:
+            print('[Error:] Publish发布接口连接失败，错误信息：{}'.format(e))
+            exit(-2)
+
+    def get_publish_all_info(self):
+        '''获取发布配置所有信息'''
+        try:
+            token = self.__token
+        except Exception as e:
+            print(e)
+            token = self.__token
+
+        res = requests.get('%s/task/v2/task_other/publish_cd/' % self.url, cookies=dict(auth_key=token))
+        ret = json.loads(res.content)
+        if ret['code'] == 0: return ret['data']
