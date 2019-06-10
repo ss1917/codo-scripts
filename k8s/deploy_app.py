@@ -10,6 +10,7 @@ Desc    : 滚动升级
 import os
 import sys
 import fire
+import time
 
 Base_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(Base_DIR)
@@ -67,6 +68,7 @@ def main(git_tag, docker_registry, repository,k8s_host,namespace):
     print('[INFO]: 这部分是用来在编译镜像，并且上传docker仓库')
     obj = Deploy(git_tag, docker_registry, repository,k8s_host,namespace)  # 初始化类
     obj.run()  # 滚动升级
+    time.sleep(15)
     obj.check()  # 检查POD状态
 
 
